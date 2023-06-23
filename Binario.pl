@@ -151,8 +151,7 @@ init:- retractall(solve_cell(_,_,_)),
 % SET
 set(Row,Column,Value):-
     retractall(solve_cell(Row,Column,_)),
-    assert(solve_cell(Row,Column,Value)),
-    print_board.
+    assert(solve_cell(Row,Column,Value)).
 % END OF SET
 
 
@@ -192,17 +191,85 @@ solved:- all_filled, no_triples, symbol_count_correct, no_repeat. %  A predicate
 % END OF SOLVED
 
 
+% A predicate to set the opposite symbol of two consecutive cells in a row
+block_doubles_row(Row) :-
+    size(N),
+    M is N - 1,
+    % Find all the pairs of consecutive cells that have the same symbol
+    findall([Column1, Column2], (
+        between(0, M, Column1),
+        Column2 is Column1 + 1,
+        (fixed_cell(Row, Column1, Value); solve_cell(Row, Column1, Value)),
+        (fixed_cell(Row, Column2, Value); solve_cell(Row, Column2, Value)),
+        Value \= n
+    ), Pairs),
+    % Loop through each pair and set the opposite symbol
+    block_doubles_row_helper(Row, Pairs),
+    print_board.
+
+% A helper predicate to loop through each pair and set the opposite symbol
+block_doubles_row_helper(_, []).
+block_doubles_row_helper(Row, [[Column1, Column2]|Rest]) :-
+    % Get the symbol of the pair
+    (fixed_cell(Row, Column1, Value); solve_cell(Row, Column1, Value)),
+    % Get the opposite symbol
+    opposite(Value, Opposite),
+    % Set the opposite symbol for the cells before and after the pair
+    Before is Column1 - 1,
+    After is Column2 + 1,
+    (   \+ fixed_cell(Row, Before, _),
+        solve_cell(Row, Before, n),
+        set(Row, Before, Opposite)
+    ;   true
+    ),
+    (   \+ fixed_cell(Row, After, _),
+        solve_cell(Row, After, n),
+        set(Row, After, Opposite)
+    ;   true
+    ),
+    % Continue with the rest of the pairs
+    block_doubles_row_helper(Row, Rest).
 
 
-% Base case: empty string
-count_consecutive_symbol("", _, Counter, Counter).
+% A predicate to set the opposite symbol of two consecutive cells in a column
+block_doubles_column(Column) :-
+    size(N),
+    M is N - 1,
+    % Find all the pairs of consecutive cells that have the same symbol
+    findall([Row1, Row2], (
+        between(0, M, Row1),
+        Row2 is Row1 + 1,
+        (fixed_cell(Row1, Column, Value); solve_cell(Row1, Column, Value)),
+        (fixed_cell(Row2, Column, Value); solve_cell(Row2, Column, Value)),
+        Value \= n
+    ), Pairs),
+    % Loop through each pair and set the opposite symbol
+    block_doubles_column_helper(Column, Pairs),
+    print_board.
 
-% Recursive case: string starts with the same symbol
-count_consecutive_symbol([Symbol|Rest], Symbol, Counter, Result) :-
-    NewCounter is Counter + 1,
-    count_symbols(Rest, Symbol, NewCounter, Result).
+% A helper predicate to loop through each pair and set the opposite symbol
+block_doubles_column_helper(_, []).
+block_doubles_column_helper(Column, [[Row1, Row2]|Rest]) :-
+    % Get the symbol of the pair
+    (fixed_cell(Row1, Column, Value); solve_cell(Row1, Column, Value)),
+    % Get the opposite symbol
+    opposite(Value, Opposite),
+    % Set the opposite symbol for the cells before and after the pair
+    Before is Row1 - 1,
+    After is Row2 + 1,
+    (   \+ fixed_cell(Before, Column, _),
+        solve_cell(Before, Column, n),
+        set(Before, Column, Opposite)
+    ;   true
+    ),
+    (   \+ fixed_cell(After, Column, _),
+        solve_cell(After, Column, n),
+        set(After, Column, Opposite)
+    ;   true
+    ),
+    % Continue with the rest of the pairs
+    block_doubles_column_helper(Column, Rest).
 
-% Recursive case: string starts with a different symbol
-count_consecutive_symbol([Other|Rest], Symbol, _, Result) :-
-    Other \= Symbol,
-    count_consecutive_symbol(Rest, Symbol, 0, Result).
+% A predicate to get the opposite symbol of x or o
+opposite(x,o).
+opposite(o,x).
