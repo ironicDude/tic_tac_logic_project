@@ -1,5 +1,5 @@
 :-dynamic solve_cell/3.
-
+c:-consult("tic_tac_logic_project/Binario.pl"). 
 size(6).
 
 fixed_cell(0,2,x).
