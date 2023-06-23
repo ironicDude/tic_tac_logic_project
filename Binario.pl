@@ -193,3 +193,16 @@ solved:- all_filled, no_triples, symbol_count_correct, no_repeat. %  A predicate
 
 
 
+
+% Base case: empty string
+count_consecutive_symbol("", _, Counter, Counter).
+
+% Recursive case: string starts with the same symbol
+count_consecutive_symbol([Symbol|Rest], Symbol, Counter, Result) :-
+    NewCounter is Counter + 1,
+    count_symbols(Rest, Symbol, NewCounter, Result).
+
+% Recursive case: string starts with a different symbol
+count_consecutive_symbol([Other|Rest], Symbol, _, Result) :-
+    Other \= Symbol,
+    count_consecutive_symbol(Rest, Symbol, 0, Result).
