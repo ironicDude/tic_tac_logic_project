@@ -1,5 +1,5 @@
 :-dynamic solve_cell/3.
-c:-consult("tic_tac_logic_project/Binario.pl"). 
+
 size(6).
 
 fixed_cell(0,2,x).
@@ -11,26 +11,6 @@ fixed_cell(4,1,x).
 fixed_cell(4,5,x).
 fixed_cell(5,0,o).
 fixed_cell(5,4,o).
-
-% test grid for completing row /column
-% fixed_cell(0,1,x).
-% fixed_cell(0,2,x).
-% fixed_cell(0,3,x).
-% fixed_cell(0,4,x).
-% fixed_cell(0,5,x).
-% fixed_cell(1,2,x).
-% fixed_cell(2,0,x).
-% fixed_cell(2,5,x).
-% fixed_cell(3,2,o).
-% fixed_cell(4,1,x).
-% fixed_cell(4,5,x).
-% fixed_cell(5,0,o).
-% fixed_cell(5,4,o).
-% fixed_cell(3,1,o).
-% fixed_cell(2,1,o).
-% fixed_cell(1,1,o).
-% End of test grid for completing row /column
-
 
 
 % CONCATENATORS
@@ -169,8 +149,7 @@ init:- retractall(solve_cell(_,_,_)),
 % SET
 set(Row,Column,Value):-
     retractall(solve_cell(Row,Column,_)),
-    assert(solve_cell(Row,Column,Value)),
-    print_board.
+    assert(solve_cell(Row,Column,Value)).
 % END OF SET
 
 
@@ -209,29 +188,115 @@ print_cell(Value) :-
 solved:- all_filled, no_triples, symbol_count_correct, no_repeat. %  A predicate to call the four rules that check that the solution is correct.
 % END OF SOLVED
 
-%/////-completing a row  or a column-//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-% helper predicat for counting x o n in a row/column
-count_x_o_n_row(Cx,Co,Cn,Ind):-concatenate_row(Ind,R),count_symbol(n,R,Cn),
-count_symbol(x,R,Cx),count_symbol(o,R,Co).
+% Avoid Triples 1
+block_doubles_row(Row) :- % A predicate to set the opposite symbol of two consecutive cells in a row
+    size(N),
+    M is N - 1,
+    findall([Column1, Column2], (   % Find all the pairs of consecutive cells that have the same symbol
+        between(0, M, Column1),
+        Column2 is Column1 + 1,
+        (fixed_cell(Row, Column1, Value); solve_cell(Row, Column1, Value)),
+        (fixed_cell(Row, Column2, Value); solve_cell(Row, Column2, Value)),
+        Value \= n
+    ), Pairs),
+    block_doubles_row_helper(Row, Pairs), % Loop through each pair and set the opposite symbol
 
-count_x_o_n_column(Cx,Co,Cn,Ind):-concatenate_column(Ind,Col),count_symbol(n,Col,Cn),
-count_symbol(x,Col,Cx),count_symbol(o,Col,Co).
-% End of counting x o n in a row/column
+    print_board.
 
-%completing_row takes index of the row and fill the last empty cell in it with appropriat symbol
-completing_row(Ind):-count_x_o_n_row(Cx,Co,Cn,Ind),Cn=1,Cx>Co,solve_cell(Ind,X,n),
-retractall(solve_cell(Ind,X,n)),assert(solve_cell(Ind,X,o)),!.
-completing_row(Ind):-count_x_o_n_row(Cx,Co,Cn,Ind),Cn=1,Co>Cx,solve_cell(Ind,X,n),
-retractall(solve_cell(Ind,X,n)),assert(solve_cell(Ind,X,x)),!.
-% End of completing row
+block_doubles_row_helper(_, []). % A helper predicate to loop through each pair and set the opposite symbol
 
-%completing column
-completing_column(Ind):-count_x_o_n_column(Cx,Co,Cn,Ind),Cn=1,Cx>Co,solve_cell(X,Ind,n),
-retractall(solve_cell(X,Ind,n)),assert(solve_cell(X,Ind,o)),!.
-completing_column(Ind):-count_x_o_n_column(Cx,Co,Cn,Ind),Cn=1,Co>Cx,solve_cell(X,Ind,n),
-retractall(solve_cell(X,Ind,n)),assert(solve_cell(X,Ind,x)),!.
-%End of completing column
+block_doubles_row_helper(Row, [[Column1, Column2]|Rest]) :-
+    (fixed_cell(Row, Column1, Value); solve_cell(Row, Column1, Value)),  % Get the symbol of the pair
 
-%/////-End of completing a row  or a column-//////////////////////////////////////////////////////////////////////////////////////////////////////////
+    opposite(Value, Opposite),  % Get the opposite symbol
+    Before is Column1 - 1,     % Set the opposite symbol for the cells before and after the pair
+    After is Column2 + 1,
+    (   \+ fixed_cell(Row, Before, _),
+        solve_cell(Row, Before, n),
+        set(Row, Before, Opposite)
+    ;   true
+    ),
+    (   \+ fixed_cell(Row, After, _),
+        solve_cell(Row, After, n),
+        set(Row, After, Opposite)
+    ;   true
+    ),
+    block_doubles_row_helper(Row, Rest).     % Continue with the rest of the pairs
+
+
+block_doubles_column(Column) :- % A predicate to set the opposite symbol of two consecutive cells in a column
+    size(N),
+    M is N - 1,
+    findall([Row1, Row2], (   % Find all the pairs of consecutive cells that have the same symbol
+        between(0, M, Row1),
+        Row2 is Row1 + 1,
+        (fixed_cell(Row1, Column, Value); solve_cell(Row1, Column, Value)),
+        (fixed_cell(Row2, Column, Value); solve_cell(Row2, Column, Value)),
+        Value \= n
+    ), Pairs),
+    block_doubles_column_helper(Column, Pairs),  % Loop through each pair and set the opposite symbol
+
+    print_board.
+
+block_doubles_column_helper(_, []). % A helper predicate to loop through each pair and set the opposite symbol
+block_doubles_column_helper(Column, [[Row1, Row2]|Rest]) :-
+    (fixed_cell(Row1, Column, Value); solve_cell(Row1, Column, Value)), % Get the symbol of the pair
+    opposite(Value, Opposite),    % Get the opposite symbol
+    Before is Row1 - 1,    % Set the opposite symbol for the cells before and after the pair
+    After is Row2 + 1,
+    (   \+ fixed_cell(Before, Column, _),
+        solve_cell(Before, Column, n),
+        set(Before, Column, Opposite)
+    ;   true
+    ),
+    (   \+ fixed_cell(After, Column, _),
+        solve_cell(After, Column, n),
+        set(After, Column, Opposite)
+    ;   true
+    ),
+    block_doubles_column_helper(Column, Rest). % Continue with the rest of the pairs
+% END OF AVOID TRIPLES 1
+
+opposite(x,o). % A predicate to get the opposite symbol of x or o
+opposite(o,x).
+
+
+% completing a row  or a column
+count_x_o_n_row(Cx,Co,Cn,Ind):-
+    concatenate_row(Ind,R),
+    count_symbol(n,R,Cn),
+    count_symbol(x,R,Cx),
+    count_symbol(o,R,Co). % helper predicat for counting x o n in a row/column
+
+count_x_o_n_column(Cx,Co,Cn,Ind):-
+    concatenate_column(Ind,Col),
+    count_symbol(n,Col,Cn),
+    count_symbol(x,Col,Cx),
+    count_symbol(o,Col,Co). % End of counting x o n in a row/column
+
+completing_row(Ind):- count_x_o_n_row(Cx,Co,Cn,Ind), %completing_row takes index of the row and fill the last empty cell in it with appropriat symbol
+    Cn=1,Cx>Co,
+    solve_cell(Ind,X,n),
+    retractall(solve_cell(Ind,X,n)),
+    assert(solve_cell(Ind,X,o)),
+    !.
+completing_row(Ind):-
+    count_x_o_n_row(Cx,Co,Cn,Ind),
+    Cn=1,Co>Cx,solve_cell(Ind,X,n),
+    retractall(solve_cell(Ind,X,n)),
+    assert(solve_cell(Ind,X,x)),!. % End of completing row
+
+completing_column(Ind):- %completing column
+    count_x_o_n_column(Cx,Co,Cn,Ind),
+    Cn=1,Cx>Co,solve_cell(X,Ind,n),
+    retractall(solve_cell(X,Ind,n)),
+    assert(solve_cell(X,Ind,o)),
+    !.
+completing_column(Ind):-
+    count_x_o_n_column(Cx,Co,Cn,Ind),Cn=1,Co>Cx,solve_cell(X,Ind,n),
+    retractall(solve_cell(X,Ind,n)),
+    assert(solve_cell(X,Ind,x)),
+    !. %End of completing column
+% End of completing a row or a column
 
