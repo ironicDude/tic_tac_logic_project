@@ -12,6 +12,24 @@ fixed_cell(4,5,x).
 fixed_cell(5,0,o).
 fixed_cell(5,4,o).
 
+% test grid for completing row /column
+% fixed_cell(0,1,x).
+% fixed_cell(0,2,x).
+% fixed_cell(0,3,x).
+% fixed_cell(0,4,x).
+% fixed_cell(0,5,x).
+% fixed_cell(1,2,x).
+% fixed_cell(2,0,x).
+% fixed_cell(2,5,x).
+% fixed_cell(3,2,o).
+% fixed_cell(4,1,x).
+% fixed_cell(4,5,x).
+% fixed_cell(5,0,o).
+% fixed_cell(5,4,o).
+% fixed_cell(3,1,o).
+% fixed_cell(2,1,o).
+% fixed_cell(1,1,o).
+% End of test grid for completing row /column
 
 
 
@@ -191,5 +209,29 @@ print_cell(Value) :-
 solved:- all_filled, no_triples, symbol_count_correct, no_repeat. %  A predicate to call the four rules that check that the solution is correct.
 % END OF SOLVED
 
+%/////-completing a row  or a column-//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+% helper predicat for counting x o n in a row/column
+count_x_o_n_row(Cx,Co,Cn,Ind):-concatenate_row(Ind,R),count_symbol(n,R,Cn),
+count_symbol(x,R,Cx),count_symbol(o,R,Co).
+
+count_x_o_n_column(Cx,Co,Cn,Ind):-concatenate_column(Ind,Col),count_symbol(n,Col,Cn),
+count_symbol(x,Col,Cx),count_symbol(o,Col,Co).
+% End of counting x o n in a row/column
+
+%completing_row takes index of the row and fill the last empty cell in it with appropriat symbol
+completing_row(Ind):-count_x_o_n_row(Cx,Co,Cn,Ind),Cn=1,Cx>Co,solve_cell(Ind,X,n),
+retractall(solve_cell(Ind,X,n)),assert(solve_cell(Ind,X,o)),!.
+completing_row(Ind):-count_x_o_n_row(Cx,Co,Cn,Ind),Cn=1,Co>Cx,solve_cell(Ind,X,n),
+retractall(solve_cell(Ind,X,n)),assert(solve_cell(Ind,X,x)),!.
+% End of completing row
+
+%completing column
+completing_column(Ind):-count_x_o_n_column(Cx,Co,Cn,Ind),Cn=1,Cx>Co,solve_cell(X,Ind,n),
+retractall(solve_cell(X,Ind,n)),assert(solve_cell(X,Ind,o)),!.
+completing_column(Ind):-count_x_o_n_column(Cx,Co,Cn,Ind),Cn=1,Co>Cx,solve_cell(X,Ind,n),
+retractall(solve_cell(X,Ind,n)),assert(solve_cell(X,Ind,x)),!.
+%End of completing column
+
+%/////-End of completing a row  or a column-//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
