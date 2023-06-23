@@ -191,31 +191,28 @@ solved:- all_filled, no_triples, symbol_count_correct, no_repeat. %  A predicate
 % END OF SOLVED
 
 
-% A predicate to set the opposite symbol of two consecutive cells in a row
-block_doubles_row(Row) :-
+% Avoid Triples 1
+block_doubles_row(Row) :- % A predicate to set the opposite symbol of two consecutive cells in a row
     size(N),
     M is N - 1,
-    % Find all the pairs of consecutive cells that have the same symbol
-    findall([Column1, Column2], (
+    findall([Column1, Column2], (   % Find all the pairs of consecutive cells that have the same symbol
         between(0, M, Column1),
         Column2 is Column1 + 1,
         (fixed_cell(Row, Column1, Value); solve_cell(Row, Column1, Value)),
         (fixed_cell(Row, Column2, Value); solve_cell(Row, Column2, Value)),
         Value \= n
     ), Pairs),
-    % Loop through each pair and set the opposite symbol
-    block_doubles_row_helper(Row, Pairs),
+    block_doubles_row_helper(Row, Pairs), % Loop through each pair and set the opposite symbol
+
     print_board.
 
-% A helper predicate to loop through each pair and set the opposite symbol
-block_doubles_row_helper(_, []).
+block_doubles_row_helper(_, []). % A helper predicate to loop through each pair and set the opposite symbol
+
 block_doubles_row_helper(Row, [[Column1, Column2]|Rest]) :-
-    % Get the symbol of the pair
-    (fixed_cell(Row, Column1, Value); solve_cell(Row, Column1, Value)),
-    % Get the opposite symbol
-    opposite(Value, Opposite),
-    % Set the opposite symbol for the cells before and after the pair
-    Before is Column1 - 1,
+    (fixed_cell(Row, Column1, Value); solve_cell(Row, Column1, Value)),  % Get the symbol of the pair
+
+    opposite(Value, Opposite),  % Get the opposite symbol
+    Before is Column1 - 1,     % Set the opposite symbol for the cells before and after the pair
     After is Column2 + 1,
     (   \+ fixed_cell(Row, Before, _),
         solve_cell(Row, Before, n),
@@ -227,35 +224,28 @@ block_doubles_row_helper(Row, [[Column1, Column2]|Rest]) :-
         set(Row, After, Opposite)
     ;   true
     ),
-    % Continue with the rest of the pairs
-    block_doubles_row_helper(Row, Rest).
+    block_doubles_row_helper(Row, Rest).     % Continue with the rest of the pairs
 
 
-% A predicate to set the opposite symbol of two consecutive cells in a column
-block_doubles_column(Column) :-
+block_doubles_column(Column) :- % A predicate to set the opposite symbol of two consecutive cells in a column
     size(N),
     M is N - 1,
-    % Find all the pairs of consecutive cells that have the same symbol
-    findall([Row1, Row2], (
+    findall([Row1, Row2], (   % Find all the pairs of consecutive cells that have the same symbol
         between(0, M, Row1),
         Row2 is Row1 + 1,
         (fixed_cell(Row1, Column, Value); solve_cell(Row1, Column, Value)),
         (fixed_cell(Row2, Column, Value); solve_cell(Row2, Column, Value)),
         Value \= n
     ), Pairs),
-    % Loop through each pair and set the opposite symbol
-    block_doubles_column_helper(Column, Pairs),
+    block_doubles_column_helper(Column, Pairs),  % Loop through each pair and set the opposite symbol
+
     print_board.
 
-% A helper predicate to loop through each pair and set the opposite symbol
-block_doubles_column_helper(_, []).
+block_doubles_column_helper(_, []). % A helper predicate to loop through each pair and set the opposite symbol
 block_doubles_column_helper(Column, [[Row1, Row2]|Rest]) :-
-    % Get the symbol of the pair
-    (fixed_cell(Row1, Column, Value); solve_cell(Row1, Column, Value)),
-    % Get the opposite symbol
-    opposite(Value, Opposite),
-    % Set the opposite symbol for the cells before and after the pair
-    Before is Row1 - 1,
+    (fixed_cell(Row1, Column, Value); solve_cell(Row1, Column, Value)), % Get the symbol of the pair
+    opposite(Value, Opposite),    % Get the opposite symbol
+    Before is Row1 - 1,    % Set the opposite symbol for the cells before and after the pair
     After is Row2 + 1,
     (   \+ fixed_cell(Before, Column, _),
         solve_cell(Before, Column, n),
@@ -267,9 +257,8 @@ block_doubles_column_helper(Column, [[Row1, Row2]|Rest]) :-
         set(After, Column, Opposite)
     ;   true
     ),
-    % Continue with the rest of the pairs
-    block_doubles_column_helper(Column, Rest).
+    block_doubles_column_helper(Column, Rest). % Continue with the rest of the pairs
+% END OF AVOID TRIPLES 1
 
-% A predicate to get the opposite symbol of x or o
-opposite(x,o).
+opposite(x,o). % A predicate to get the opposite symbol of x or o
 opposite(o,x).
