@@ -13,8 +13,6 @@ fixed_cell(5,0,o).
 fixed_cell(5,4,o).
 
 
-
-
 % CONCATENATORS
 concatenate_row(Row, Result) :- % A predicate to concatenate a row into a string
 
@@ -262,3 +260,43 @@ block_doubles_column_helper(Column, [[Row1, Row2]|Rest]) :-
 
 opposite(x,o). % A predicate to get the opposite symbol of x or o
 opposite(o,x).
+
+
+% completing a row  or a column
+count_x_o_n_row(Cx,Co,Cn,Ind):-
+    concatenate_row(Ind,R),
+    count_symbol(n,R,Cn),
+    count_symbol(x,R,Cx),
+    count_symbol(o,R,Co). % helper predicat for counting x o n in a row/column
+
+count_x_o_n_column(Cx,Co,Cn,Ind):-
+    concatenate_column(Ind,Col),
+    count_symbol(n,Col,Cn),
+    count_symbol(x,Col,Cx),
+    count_symbol(o,Col,Co). % End of counting x o n in a row/column
+
+completing_row(Ind):- count_x_o_n_row(Cx,Co,Cn,Ind), %completing_row takes index of the row and fill the last empty cell in it with appropriat symbol
+    Cn=1,Cx>Co,
+    solve_cell(Ind,X,n),
+    retractall(solve_cell(Ind,X,n)),
+    assert(solve_cell(Ind,X,o)),
+    !.
+completing_row(Ind):-
+    count_x_o_n_row(Cx,Co,Cn,Ind),
+    Cn=1,Co>Cx,solve_cell(Ind,X,n),
+    retractall(solve_cell(Ind,X,n)),
+    assert(solve_cell(Ind,X,x)),!. % End of completing row
+
+completing_column(Ind):- %completing column
+    count_x_o_n_column(Cx,Co,Cn,Ind),
+    Cn=1,Cx>Co,solve_cell(X,Ind,n),
+    retractall(solve_cell(X,Ind,n)),
+    assert(solve_cell(X,Ind,o)),
+    !.
+completing_column(Ind):-
+    count_x_o_n_column(Cx,Co,Cn,Ind),Cn=1,Co>Cx,solve_cell(X,Ind,n),
+    retractall(solve_cell(X,Ind,n)),
+    assert(solve_cell(X,Ind,x)),
+    !. %End of completing column
+% End of completing a row or a column
+
