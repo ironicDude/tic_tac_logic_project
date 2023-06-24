@@ -2,14 +2,22 @@
 
 size(6).
 
-fixed_cell(0,2,x).
-fixed_cell(1,2,x).
-fixed_cell(2,0,x).
-fixed_cell(2,5,x).
-fixed_cell(3,2,o).
-fixed_cell(4,1,x).
-fixed_cell(4,5,x).
-fixed_cell(5,0,o).
+fixed_cell(0,2,o). 
+fixed_cell(0,5,x). 
+fixed_cell(0,0,o). 
+fixed_cell(0,1,x). 
+fixed_cell(1,2,o). 
+fixed_cell(1,5,x). 
+fixed_cell(1,0,o). 
+fixed_cell(1,1,x). 
+fixed_cell(1,4,x). 
+fixed_cell(1,3,o). 
+fixed_cell(2,0,x). 
+fixed_cell(2,5,x). 
+fixed_cell(3,2,o). 
+fixed_cell(4,1,x). 
+fixed_cell(4,5,x). 
+fixed_cell(5,0,o). 
 fixed_cell(5,4,o).
 
 
@@ -133,7 +141,7 @@ no_repeat :- % A predicate that calls the no_columns_match and no_rows_match pre
 % INIT
 loop :- 
     size(N),
-    M is N - 1
+    M is N - 1,
     between(0, M, Row), % Loop through all the indices and call solve_cell if the cell is not fixed 
     between(0, M, Column), 
     \+ fixed_cell(Row, Column,_), 
@@ -155,7 +163,6 @@ set(Row,Column,Value):-
 % END OF SET
 
 
-% PRINT
 print_board :-
     size(N),
     M is N - 1,
@@ -182,7 +189,12 @@ print_cell(Value) :-
     var(Value),
     format('   ', []).
 print_cell(Value) :-
+    Value == n,
+    format('   ', []).
+print_cell(Value) :-
+    Value \== n,
     format(' ~w ', [Value]).
+
 % END OF PRINT
 
 
