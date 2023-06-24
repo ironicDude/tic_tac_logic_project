@@ -300,13 +300,11 @@ completing_column(Ind):-
     !. %End of completing column
 % End of completing a row or a column
 
-
-% A predicate to set the symbol of a cell to the opposite of the symbols of the cells before and after it in a row
-fill_between_row(Row) :-
+% NO TRIPLE 2
+fill_between_row(Row) :- % A predicate to set the symbol of a cell to the opposite of the symbols of the cells before and after it in a row
     size(N),
     M is N - 1,
-    % Find all the cells that have the same symbol before and after them
-    findall(Column, (
+    findall(Column, (     % Find all the cells that have the same symbol before and after them
         between(1, M, Column),
         Before is Column - 1,
         After is Column + 1,
@@ -314,33 +312,25 @@ fill_between_row(Row) :-
         (fixed_cell(Row, After, Value); solve_cell(Row, After, Value)),
         Value \= n
     ), Columns),
-    % Loop through each cell and set the opposite symbol
-    fill_between_row_helper(Row, Columns),
+    fill_between_row_helper(Row, Columns),   % Loop through each cell and set the opposite symbol
     print_board.
 
-% A helper predicate to loop through each cell and set the opposite symbol
-fill_between_row_helper(_, []).
+fill_between_row_helper(_, []). % A helper predicate to loop through each cell and set the opposite symbol
 fill_between_row_helper(Row, [Column|Rest]) :-
-    % Get the symbol before and after the cell
-    Before is Column - 1,
+    Before is Column - 1,   % Get the symbol before and after the cell
     (fixed_cell(Row, Before, Value); solve_cell(Row, Before, Value)),
-    % Get the opposite symbol
-    opposite(Value, Opposite),
-    % Set the opposite symbol for the cell
-    (   \+ fixed_cell(Row, Column, _),
+    opposite(Value, Opposite),   % Get the opposite symbol
+    (   \+ fixed_cell(Row, Column, _),   % Set the opposite symbol for the cell
         solve_cell(Row, Column, n),
         set(Row, Column, Opposite)
     ;   true
     ),
-    % Continue with the rest of the cells
-    fill_between_row_helper(Row, Rest).
+    fill_between_row_helper(Row, Rest).  % Continue with the rest of the cells
 
-% A predicate to set the symbol of a cell to the opposite of the symbols of the cells before and after it in a column
-fill_between_column(Column) :-
+fill_between_column(Column) :- % A predicate to set the symbol of a cell to the opposite of the symbols of the cells before and after it in a column
     size(N),
     M is N - 1,
-    % Find all the cells that have the same symbol before and after them
-    findall(Row, (
+    findall(Row, (   % Find all the cells that have the same symbol before and after them
         between(1, M, Row),
         Before is Row - 1,
         After is Row + 1,
@@ -348,23 +338,18 @@ fill_between_column(Column) :-
         (fixed_cell(After, Column, Value); solve_cell(After, Column, Value)),
         Value \= n
     ), Rows),
-    % Loop through each cell and set the opposite symbol
-    fill_between_column_helper(Column, Rows),
+    fill_between_column_helper(Column, Rows),    % Loop through each cell and set the opposite symbol
     print_board.
 
-% A helper predicate to loop through each cell and set the opposite symbol
-fill_between_column_helper(_, []).
+fill_between_column_helper(_, []). % A helper predicate to loop through each cell and set the opposite symbol
 fill_between_column_helper(Column, [Row|Rest]) :-
-    % Get the symbol before and after the cell
-    Before is Row - 1,
+    Before is Row - 1,  % Get the symbol before and after the cell
     (fixed_cell(Before, Column, Value); solve_cell(Before, Column, Value)),
-    % Get the opposite symbol
-    opposite(Value, Opposite),
-    % Set the opposite symbol for the cell
-    (   \+ fixed_cell(Row, Column, _),
+    opposite(Value, Opposite),  % Get the opposite symbol
+    (   \+ fixed_cell(Row, Column, _),  % Set the opposite symbol for the cell
         solve_cell(Row, Column, n),
         set(Row, Column, Opposite)
     ;   true
     ),
-    % Continue with the rest of the cells
-    fill_between_column_helper(Column, Rest).
+    fill_between_column_helper(Column, Rest).  % Continue with the rest of the cells
+% END OF NO TRIPLE 2
