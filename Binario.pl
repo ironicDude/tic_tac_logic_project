@@ -6,17 +6,20 @@ fixed_cell(0,2,o).
 fixed_cell(0,5,x).
 fixed_cell(0,0,o).
 fixed_cell(0,1,x).
+fixed_cell(2,1,o).
+fixed_cell(5,1,o).
 fixed_cell(1,2,o).
 fixed_cell(1,5,x).
 fixed_cell(1,0,o).
 fixed_cell(1,1,x).
-fixed_cell(1,4,x).
-fixed_cell(1,3,o).
+fixed_cell(1,4,o).
+fixed_cell(1,3,x).
 fixed_cell(2,0,x).
-fixed_cell(2,5,x).
+fixed_cell(2,5,o).
+fixed_cell(3,5,o).
 fixed_cell(3,2,o).
-fixed_cell(4,1,x).
 fixed_cell(4,5,x).
+fixed_cell(5,5,o).
 fixed_cell(5,0,o).
 fixed_cell(5,4,o).
 
@@ -119,6 +122,7 @@ no_rows_match :- % Predicate to check if any rows match and returns true/false
         concatenate_row(Row2, String2),
         strings_match(String1, String2)
     ).
+   
 
 no_columns_match :- % Predicate to check if any columns match and returns true/false
     size(N),
@@ -369,46 +373,78 @@ fill_between_column_helper(Column, [Row|Rest]) :-
 
 % Avoiding row or column duplication
 
-% avoiding row duplication
+    % avoiding row duplication
 
-fill_first_x_row(R,[Col1,Col2]):-% n n  >>> x o
-                retractall(solve_cell(R,_,n)),
-                assert(solve_cell(R,Col1,x)),
-                assert(solve_cell(R,Col2,o)).
-fill_first_o_row(R,[Col1,Col2]):-% n n >>> o x
-                retractall(solve_cell(R,_,n)),
-                assert(solve_cell(R,Col1,o)),
-                assert(solve_cell(R,Col2,x)).
+    fill_first_x_row(R,[Col1,Col2]):-% n n  >>> x o
+                    retractall(solve_cell(R,_,n)),
+                    assert(solve_cell(R,Col1,x)),
+                    assert(solve_cell(R,Col2,o)).
+    fill_first_o_row(R,[Col1,Col2]):-% n n >>> o x
+                    retractall(solve_cell(R,_,n)),
+                    assert(solve_cell(R,Col1,o)),
+                    assert(solve_cell(R,Col2,x)).
 
-helper(R):-     count_x_o_n_row(Cx,Co,Cn,R),
-                Cn=2,Cx=Co,
-                findall(Col,solve_cell(R,Col,n),Cols),
-                fill_first_x_row(R,Cols), % n n --> x o
-                \+no_rows_match,% if caused duplication delete what you have  done
-                forall(
-                    member(Col, Cols),
-                    (
-                        retractall(solve_cell(R, Col, _)),
-                        assert(solve_cell(R,Col,n))
-                    )
-                ).
-avoid_row_duplication(R):-
-\+helper(R).
-avoid_row_duplication(R):-
-                count_x_o_n_row(Cx,Co,Cn,R),
-                Cn=2,Cx=Co,
-                findall(Col,solve_cell(R,Col,n),Cols),
-                fill_first_o_row(R,Cols),
-                \+no_rows_match,
-                forall(
-                    member(Col, Cols),
-                    (
-                        retractall(solve_cell(R, Col, _)),
-                        assert(solve_cell(R,Col,n))
-                    )
-                ),!.
-% End of avoiding row duplication
+    helper(R):-    
+        count_x_o_n_row(Cx,Co,Cn,R),
+        Cn=2,Cx=Co,
+        findall(Col,solve_cell(R,Col,n),Cols),
+        fill_first_x_row(R,Cols), % n n --> x o
+        \+no_rows_match,% if caused duplication delete what you have  done
+        forall(
+            member(Col, Cols),
+            (
+                retractall(solve_cell(R, Col, _)),
+                assert(solve_cell(R,Col,n))
+            )
+        ).
 
+    avoid_row_duplication(R):-
+    \+helper(R),!.
+    avoid_row_duplication(R):-
+        count_x_o_n_row(Cx,Co,Cn,R),
+        Cn=2,Cx=Co,
+        findall(Col,solve_cell(R,Col,n),Cols),
+        fill_first_o_row(R,Cols),!.
+
+    % End of avoiding row duplication
+
+
+
+
+
+
+
+    % avoiding column duplication
+    fill_first_x_col(Col,[Row1,Row2]):-% n n  >>> x o
+                    retractall(solve_cell(_,Col,n)),
+                    assert(solve_cell(Row1,Col,x)),
+                    assert(solve_cell(Row2,Col,o)).
+    fill_first_o_col(Col,[Row1,Row2]):-% n n >>> o x
+                    retractall(solve_cell(_,Col,n)),
+                    assert(solve_cell(Row1,Col,o)),
+                    assert(solve_cell(Row2,Col,x)).
+
+    helper_col(Col):-count_x_o_n_column(Cx,Co,Cn,Col),
+                    Cn=2,Cx=Co,
+                    findall(Row,solve_cell(Row,Col,n),Rows),
+                    fill_first_x_col(Col,Rows), % n n --> x o
+                    \+no_columns_match,% if caused duplication delete what you have  done
+                    forall(
+                        member(Row, Rows),
+                        (
+                            retractall(solve_cell(Row, Col,_)),
+                            assert(solve_cell(Row,Col,n))
+                        )
+                    ).
+
+    avoid_col_duplication(Col):-
+    \+helper_col(Col),!.
+    avoid_col_duplication(Col):-
+            count_x_o_n_column(Cx,Co,Cn,Col),
+            Cn=2,Cx=Co,
+            findall(Row,solve_cell(Row,Col,n),Rows),
+            fill_first_o_col(Col,Rows),!.
+    % End of avoiding row duplication
 
 % End of Avoiding row or column duplication
 
