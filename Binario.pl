@@ -1,8 +1,18 @@
 :-dynamic solve_cell/3.
-
+c:-consult("tic_tac_logic_project/Binario.pl").
 size(6).
 
-fixed_cell(0,2,x).
+fixed_cell(0,2,o).
+fixed_cell(0,5,x).
+fixed_cell(0,0,o).
+fixed_cell(0,1,x).
+fixed_cell(1,2,o).
+fixed_cell(1,5,x).
+fixed_cell(1,0,o).
+fixed_cell(1,1,x).
+fixed_cell(1,4,x).
+fixed_cell(1,3,o).
+fixed_cell(1,2,x).
 fixed_cell(1,2,x).
 fixed_cell(2,0,x).
 fixed_cell(2,5,x).
@@ -132,8 +142,8 @@ no_repeat :- % A predicate that calls the no_columns_match and no_rows_match pre
 
 % INIT
 loop :- 
-    between(0, 6, Row), % Loop through all the indices and call solve_cell if the cell is not fixed 
-    between(0, 6, Column), 
+    between(0, 5, Row), % Loop through all the indices and call solve_cell if the cell is not fixed 
+    between(0, 5, Column), 
     \+ fixed_cell(Row, Column,_), 
     assert(solve_cell(Row, Column, n)), 
     fail. 
@@ -353,3 +363,32 @@ fill_between_column_helper(Column, [Row|Rest]) :-
     ),
     fill_between_column_helper(Column, Rest).  % Continue with the rest of the cells
 % END OF NO TRIPLE 2
+
+
+% Avoiding row or column duplication
+
+% avoiding row duplication
+fill_first_x_row(R,[Col1,Col2]):-
+                retractall(solve_cell(R,_,n)),
+                assert(solve_cell(R,Col1,x)),
+                assert(solve_cell(R,Col2,o)).
+fill_first_o_row(R,[Col1,Col2]):-
+                retractall(solve_cell(R,_,n)),
+                assert(solve_cell(R,Col1,o)),
+                assert(solve_cell(R,Col2,x)).
+avoid_row_duplication:-
+                count_x_o_n_row(Cx,Co,Cn,0),
+                Cn=2,Cx=Co,
+                findall(Col,solve_cell(0,Col,n),Cols),
+                fill_first_o_row(0,Cols),
+                no_rows_match,!.
+avoid_row_duplication:-
+                count_x_o_n_row(Cx,Co,Cn,0),
+                Cn=2,Cx=Co,
+                findall(Col,solve_cell(0,Col,n),Cols),
+                fill_first_x_row(0,Cols).
+
+% End of avoiding row duplication
+
+% End of Avoiding row or column duplication
+
