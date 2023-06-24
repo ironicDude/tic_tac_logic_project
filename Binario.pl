@@ -302,7 +302,7 @@ completing_column(Ind):-
     !. %End of completing column
 % End of completing a row or a column
 
-% NO TRIPLE 2
+% AVOID TRIPLES 2
 fill_between_row(Row) :- % A predicate to set the symbol of a cell to the opposite of the symbols of the cells before and after it in a row
     size(N),
     M is N - 1,
@@ -354,4 +354,4 @@ fill_between_column_helper(Column, [Row|Rest]) :-
     ;   true
     ),
     fill_between_column_helper(Column, Rest).  % Continue with the rest of the cells
-% END OF NO TRIPLE 2
+% END OF AVOID TRIPLES 2
