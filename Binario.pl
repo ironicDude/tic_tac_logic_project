@@ -12,8 +12,6 @@ fixed_cell(1,0,o).
 fixed_cell(1,1,x).
 fixed_cell(1,4,x).
 fixed_cell(1,3,o).
-fixed_cell(1,2,x).
-fixed_cell(1,2,x).
 fixed_cell(2,0,x).
 fixed_cell(2,5,x).
 fixed_cell(3,2,o).
@@ -380,8 +378,8 @@ avoid_row_duplication:-
                 count_x_o_n_row(Cx,Co,Cn,0),
                 Cn=2,Cx=Co,
                 findall(Col,solve_cell(0,Col,n),Cols),
-                fill_first_o_row(0,Cols),
-                no_rows_match,!.
+                fill_first_o_row(0,Cols).
+                % no_rows_match,!.
 avoid_row_duplication:-
                 count_x_o_n_row(Cx,Co,Cn,0),
                 Cn=2,Cx=Co,
