@@ -132,8 +132,10 @@ no_repeat :- % A predicate that calls the no_columns_match and no_rows_match pre
 
 % INIT
 loop :- 
-    between(0, 6, Row), % Loop through all the indices and call solve_cell if the cell is not fixed 
-    between(0, 6, Column), 
+    size(N),
+    M is N - 1
+    between(0, M, Row), % Loop through all the indices and call solve_cell if the cell is not fixed 
+    between(0, M, Column), 
     \+ fixed_cell(Row, Column,_), 
     assert(solve_cell(Row, Column, n)), 
     fail. 
