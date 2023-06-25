@@ -5,9 +5,8 @@ size(6).
 fixed_cell(0,2,o).
 fixed_cell(0,5,x).
 fixed_cell(0,0,o).
-fixed_cell(0,1,x).
-fixed_cell(2,1,o).
-fixed_cell(5,1,o).
+
+fixed_cell(5,1,x).
 fixed_cell(1,2,o).
 fixed_cell(1,5,x).
 fixed_cell(1,0,o).
@@ -15,11 +14,11 @@ fixed_cell(1,1,x).
 fixed_cell(1,4,o).
 fixed_cell(1,3,x).
 fixed_cell(2,0,x).
-fixed_cell(2,5,o).
+fixed_cell(2,5,x).
 fixed_cell(3,5,o).
 fixed_cell(3,2,o).
-fixed_cell(4,5,x).
-fixed_cell(5,5,o).
+fixed_cell(4,5,o).
+fixed_cell(5,5,x).
 fixed_cell(5,0,o).
 fixed_cell(5,4,o).
 
@@ -447,4 +446,132 @@ fill_between_column_helper(Column, [Row|Rest]) :-
     % End of avoiding row duplication
 
 % End of Avoiding row or column duplication
+
+%   (Advanced technique  2)
+%advanced avoid duplicated row o column
+%advanced avoid duplicated column
+
+    adv_avoid_col_duplication(solve_cell(Row,Col,n)):-
+        size(S),
+        Threshold is (S/2) - 1,
+        count_x_o_n_column(Cx,_,Cn,Col),
+        Cn=3,
+        Cx=Threshold,
+        retractall(solve_cell(Row,Col,n)),
+        assert(solve_cell(Row,Col,x)),
+        findall(Row1,solve_cell(Row1,Col,n),Rows),
+        forall(% fill the rest empty cells with o
+            member(Row1,Rows),
+            (
+                retractall(solve_cell(Row1,Col,_)),
+                assert(solve_cell(Row1,Col,o))
+            )
+        ),
+        helper_check_col(Col),
+        retractall(solve_cell(Row,Col,x)),
+        assert(solve_cell(Row,Col,o)),
+        forall(% remove the cells you filled with o's
+        member(Row1,Rows),
+            (
+                retractall(solve_cell(Row1,Col,o)),
+                assert(solve_cell(Row1,Col,n))
+            )
+        ),
+        avoid_col_duplication(Col),!.
+        
+
+    adv_avoid_col_duplication(solve_cell(Row,Col,n)):-
+        size(S),
+        Threshold is (S/2) - 1,
+        count_x_o_n_column(_,Co,Cn,1),
+        Cn=3,
+        Co=Threshold,
+        retractall(solve_cell(Row,Col,n)),
+        assert(solve_cell(Row,Col,o)),
+        findall(Row1,solve_cell(Row1,Col,n),Rows),
+        forall(% fill the rest empty cells with x
+            member(Row1,Rows),
+            (
+                retractall(solve_cell(Row1,Col,_)),
+                assert(solve_cell(Row1,Col,x))
+            )
+        ),
+        helper_check_col(Col),
+        retractall(solve_cell(Row,Col,o)),
+        assert(solve_cell(Row,Col,x)),
+        forall(% remove the cells you filled with x's
+        member(Row1,Rows),
+            (
+                retractall(solve_cell(Row1,Col,x)),
+                assert(solve_cell(Row1,Col,n))
+            )
+        ),
+        avoid_col_duplication(Col),!.
+
+%End of advanced avoid duplicated column.
+
+% advanced avoid duplicated row
+
+    adv_avoid_row_duplication(solve_cell(Row,Col,n)):-
+        size(S),
+        Threshold is (S/2) - 1,
+        count_x_o_n_row(Cx,_,Cn,Row),
+        Cn=3,
+        Cx=Threshold,
+        retractall(solve_cell(Row,Col,n)),
+        assert(solve_cell(Row,Col,x)),
+        findall(Col1,solve_cell(Row,Col1,n),Cols),
+        forall(% fill the rest empty cells with o
+            member(Col1,Cols),
+            (
+                retractall(solve_cell(Row,Col1,_)),
+                assert(solve_cell(Row,Col1,o))
+            )
+        ),
+        helper_check_row(Row).
+        retractall(solve_cell(Row,Col,x)),
+        assert(solve_cell(Row,Col,o)),
+        forall(% remove the cells you filled with o's
+        member(Col1,Cols),
+            (
+                retractall(solve_cell(Row,Col1,o)),
+                assert(solve_cell(Row,Col1,n))
+            )
+        ),
+        avoid_row_duplication(Row),!.
+        
+
+
+    adv_avoid_row_duplication(solve_cell(Row,Col,n)):-
+        size(S),
+        Threshold is (S/2) - 1,
+        count_x_o_n_row(_,Co,Cn,Row),
+        Cn=3,
+        Co=Threshold,
+        retractall(solve_cell(Row,Col,n)),
+        assert(solve_cell(Row,Col,o)),
+        findall(Col1,solve_cell(Row,Col1,n),Cols),
+        forall(% fill the rest empty cells with x
+            member(Col1,Cols),
+            (
+                retractall(solve_cell(Row,Col1,_)),
+                assert(solve_cell(Row,Col1,x))
+            )
+        ),
+        helper_check_row(Row),
+        retractall(solve_cell(Row,Col,o)),
+        assert(solve_cell(Row,Col,x)),
+        forall(% remove the cells you filled with x's
+        member(Col1,Cols),
+            (
+                retractall(solve_cell(Row,Col1,x)),
+                assert(solve_cell(Row,Col1,n))
+            )
+        ),
+        avoid_row_duplication(Row),!.
+% End of advanced avoid duplicated row
+helper_check_row(Row):- \+no_rows_match; \+no_triples_in_row(Row).
+helper_check_col(Col):- \+no_columns_match; \+no_triples_in_column(Row).
+
+%End of advanced avoid duplicated row or column
 
