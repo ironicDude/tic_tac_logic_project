@@ -528,7 +528,7 @@ fill_between_column_helper(Column, [Row|Rest]) :-
                 assert(solve_cell(Row,Col1,o))
             )
         ),
-        helper_check_row(Row).
+        helper_check_row(Row),
         retractall(solve_cell(Row,Col,x)),
         assert(solve_cell(Row,Col,o)),
         forall(% remove the cells you filled with o's
@@ -571,7 +571,7 @@ fill_between_column_helper(Column, [Row|Rest]) :-
         avoid_row_duplication(Row),!.
 % End of advanced avoid duplicated row
 helper_check_row(Row):- \+no_rows_match; \+no_triples_in_row(Row).
-helper_check_col(Col):- \+no_columns_match; \+no_triples_in_column(Row).
+helper_check_col(Col):- \+no_columns_match; \+no_triples_in_column(Col).
 
 %End of advanced avoid duplicated row or column
 
